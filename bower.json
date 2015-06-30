@@ -1,0 +1,23 @@
+{
+  "name": "book_club_simple",
+  "version": "0.0.0",
+  "homepage": "https://github.com/bradbarrow/sp-stamplay",
+  "description": "Book Club",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "algoliasearch": "~3.7.0",
+    "angular-stamplay": "*",
+    "bootstrap": "~3.3.5",
+    "angular-bootstrap": "~0.13.0",
+    "angular": "~1.4.0",
+    "ionicons": "~2.0.1",
+    "stamplay-js-sdk": "~1.2.0"
+  }
+}
