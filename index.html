@@ -1,0 +1,60 @@
+<!doctype html>
+<html ng-app="stamplay">
+  <head>
+    <meta charset="utf-8">
+    <title>Stampplay Book Club</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./bower_components/angular-bootstrap/ui-bootstrap-csp.css" />
+    <link rel="stylesheet" href="./bower_components/ionicons/css/ionicons.min.css" />
+    <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
+    <script src="./bower_components/stamplay-js-sdk/dist/stamplay.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-stamplay/angular-stamplay.js"></script>
+    <script src="./bower_components/algoliasearch/dist/algoliasearch.angular.js"></script>
+    <script src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="./scripts/app.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-static-top navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="">
+            Stamplay Book Club
+          </a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+          <ul class="nav navbar-nav">
+            <li class="active"><a ng-href="#">Books</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      <div class="jumbotron text-center">
+        <h1 class="fancy">What are you reading?</h1>
+        <p class="lead">
+          Share your thoughts about the books you've read
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="panel panel-default" ng-controller="BooksController">
+            <div class="panel-heading">
+              Books
+            </div>
+            <div class="list-group">
+              <div class="list-group-item" ng-repeat="book in books">
+                {{book.title}}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
