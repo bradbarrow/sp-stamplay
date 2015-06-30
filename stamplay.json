@@ -1,0 +1,10 @@
+{
+  "appId": "bookclub",
+  "apiKey": "YOUR_KEY_HERE",
+  "public": "./",
+  "ignore": [
+    "stamplay.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
