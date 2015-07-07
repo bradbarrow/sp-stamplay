@@ -133,19 +133,18 @@
             </div>
             <div class="panel-body" ng-show="loggedIn">
               <form class="form-horizontal" ng-submit="leaveReview()">
-                <div class="form-group">
-                  <label for="book" class="col-sm-2 control-label">Book</label>
-                  <div class="col-sm-10">
-                    <select
-                      ng-model="newReview.bookId"
-                      ng-options="book.instance.id as book.instance.title for book in bookOptions"
-                      class="form-control"
-                      id="book"
-                      autocomplete="off">
-                      <option value="">-- Choose a book --</option>
-                    </select>
+                  <div class="form-group">
+                    <label for="book" class="col-sm-2 control-label">Book</label>
+                    <div class="col-sm-10">
+                      <input
+                      type="text"
+                      ng-model="newReview.book"
+                      placeholder="Find a book"
+                      typeahead="book as book.title for book in findBook($viewValue)"
+                      typeahead-loading="loadingBooks" class="form-control">
+                      <i ng-show="loadingBooks" class="glyphicon glyphicon-refresh"></i>
+                    </div>
                   </div>
-                </div>
                 <div class="form-group">
                   <label for="text" class="col-sm-2 control-label">Review</label>
                   <div class="col-sm-10">

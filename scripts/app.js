@@ -1,6 +1,6 @@
 Stamplay.init("bookclub");
 
-var app = angular.module('stamplay', ['ngStamplay']);
+var app = angular.module('stamplay', ['ngStamplay', 'algoliasearch', 'ui.bootstrap']);
 
 app.run(function($rootScope, User){
   $rootScope.paid = false;
@@ -122,15 +122,31 @@ app.controller('NavController', function($scope, User, $rootScope){
   }
 });
 
-app.controller('ReviewController', function($scope, Book, $rootScope, Review){
-  $scope.bookOptions = [];
+app.controller('ReviewController', function($scope, Book, $rootScope, Review, algolia, $q){
+  // Replace the following values by your ApplicationID and ApiKey.
+  var client = algolia.Client('your app id', 'your search key');
+  // Replace the following value by the name of the index you want to query.
+  var index = client.initIndex('books');
 
-  Book.all().then(function(books){
-    $scope.bookOptions = books;
-  });
+  $scope.findBook = function(value) {
+    var deferred = $q.defer();
+
+    index.search(value, { hitsPerPage: 5 }).then(function(content) {
+      if (content.query !== value) {
+        // do not take out-dated answers into account
+        return;
+      }
+      deferred.resolve(content.hits);
+    }, function(content) {
+      deferred.resolve([]);
+      return [];
+    });
+
+    return deferred.promise;
+  };
 
   $scope.newReview = {
-    bookId: null,
+    book: null,
     text: '',
   };
 
@@ -138,7 +154,7 @@ app.controller('ReviewController', function($scope, Book, $rootScope, Review){
     Review.add($scope.newReview).then(function(savedReview){
       $rootScope.$emit('Review::added', {review: savedReview});
       $scope.newReview.text = '';
-      $scope.newReview.bookId = null;
+      $scope.newReview.book = null;
     });
   }
 });
@@ -275,7 +291,7 @@ app.factory('Review', function($q, $stamplay, Book, $rootScope){
     // Save the review
     ReviewModel.save().then(function() {
       // If it saves, update the book
-      Book.find(review.bookId).then(function(BookToUpdate){
+      Book.find(review.book.bookId).then(function(BookToUpdate){
         // Rate it
         BookToUpdate.rate(review.rating);
 
