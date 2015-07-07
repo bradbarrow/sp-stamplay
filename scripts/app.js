@@ -214,6 +214,9 @@ app.factory('Review', function($q, $stamplay, Book, $rootScope){
     ReviewModel.save().then(function() {
       // If it saves, update the book
       Book.find(review.bookId).then(function(BookToUpdate){
+        // Rate it
+        BookToUpdate.rate(review.rating);
+
         // Store the saved review on the book
         var currentReviews = BookToUpdate.get('reviews') || [];
         currentReviews.push(ReviewModel.get('_id'));
