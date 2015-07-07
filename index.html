@@ -153,6 +153,10 @@
                 </span>
               </div>
               <div class="list-group-item" ng-repeat="review in book.instance.reviews">
+                <button class="btn-default btn btn-xs" ng-click="upvote(review)">
+                  {{review.actions.votes.total}} <i class="icon ion-arrow-up-a"></i>
+                </button>
+                &nbsp;
                 <strong>{{review.user}}</strong> {{review.text}}
               </div>
             </div>
