@@ -17,22 +17,51 @@ app.run(function($rootScope, User){
   });
 });
 
-app.controller('BooksController', function($scope, $rootScope, $stamplay, Book){
+app.controller('BooksController', function($scope, $rootScope, $stamplay, Book, Review, User){
   $scope.books = [];
 
-  Book.all().then(function(books){
-    $scope.books = books;
-  });
+  var loadBooks = function(){
+    Book.all().then(function(books){
+      $scope.books = books;
+      $scope.books.forEach(function(book){
+        var reviews = book.instance.reviews || [];
+        reviews.forEach(function(review){
+          if(review.owner){
+            User.find(review.owner).then(function(user){
+              review.user = user.get('displayName');
+            });
+          } else {
+            review.user =  'Anonymous';
+          }
+        });
+      })
+    });
+  }
 
-  $scope.newBook = { title: '' }; // Empty book for form
+  $scope.newBook = {
+    title: ''
+  };
 
   $scope.addBook = function() {
     Book.add($scope.newBook).then(function(savedBook){
-      $scope.books.push(savedBook); // Immediate UI response
+      $scope.books.push(savedBook);
+
+      // Emit new book was added
+      $rootScope.$emit('Book::added');
     });
 
-    $scope.newBook.title = ''; // Blank out the form
+    $scope.newBook.title = '';
   }
+
+  $rootScope.$on('Book::added', function(data){
+    loadBooks();
+  });
+
+  $rootScope.$on('Review::added', function(data){
+    loadBooks();
+  });
+
+  loadBooks();
 });
 
 app.controller('NavController', function($scope, User, $rootScope){
@@ -48,12 +77,33 @@ app.controller('NavController', function($scope, User, $rootScope){
   }
 });
 
+app.controller('ReviewController', function($scope, Book, $rootScope, Review){
+  $scope.bookOptions = [];
+
+  Book.all().then(function(books){
+    $scope.bookOptions = books;
+  });
+
+  $scope.newReview = {
+    bookId: null,
+    text: '',
+  };
+
+  $scope.leaveReview = function() {
+    Review.add($scope.newReview).then(function(savedReview){
+      $rootScope.$emit('Review::added', {review: savedReview});
+      $scope.newReview.text = '';
+      $scope.newReview.bookId = null;
+    });
+  }
+});
+
 app.factory('Book', function($q, $stamplay){
   function all() {
     var deferred = $q.defer();
 
     var BookCollection = $stamplay.Cobject('book').Collection;
-    BookCollection.fetch().then(function() {
+    BookCollection.fetch({populate: true}).then(function() {
       deferred.resolve(BookCollection.instance);
     });
 
@@ -72,9 +122,23 @@ app.factory('Book', function($q, $stamplay){
     return deferred.promise;
   }
 
+  function find(id) {
+    var deferred = $q.defer();
+
+    var BookModel = $stamplay.Cobject('book').Model;
+    BookModel.fetch(id).then(function() {
+      deferred.resolve(BookModel);
+    }).catch(function(err) {
+      deferred.reject(err);
+    });
+
+    return deferred.promise;
+  }
+
   return {
     all: all,
-    add: add
+    add: add,
+    find: find
   }
 });
 
@@ -101,6 +165,19 @@ app.factory('User', function($q, $stamplay){
     return deferred.promise;
   }
 
+  function find(id) {
+    var deferred = $q.defer();
+
+    var User = $stamplay.User().Model;
+    User.fetch(id).then(function() {
+      deferred.resolve(User);
+    }).catch(function(err) {
+      deferred.reject(err);
+    });
+
+    return deferred.promise;
+  }
+
   function logout() {
     var User = $stamplay.User().Model;
     User.logout();
@@ -109,6 +186,50 @@ app.factory('User', function($q, $stamplay){
   return {
     active: active,
     logout: logout,
-    login: login
+    login: login,
+    find: find
   };
+});
+
+app.factory('Review', function($q, $stamplay, Book, $rootScope){
+  function all() {
+    var deferred = $q.defer();
+
+    var ReviewCollection = $stamplay.Cobject('review').Collection;
+    ReviewCollection.fetch().then(function() {
+      deferred.resolve(ReviewCollection.instance);
+    });
+
+    return deferred.promise;
+  }
+
+  function add(review) {
+    var deferred = $q.defer();
+
+    var ReviewModel = $stamplay.Cobject('review').Model;
+    ReviewModel.set('text', review.text); // The review text
+    ReviewModel.set('owner', $rootScope.user.instance.id); //Associate with logged in user
+
+    // Save the review
+    ReviewModel.save().then(function() {
+      // If it saves, update the book
+      Book.find(review.bookId).then(function(BookToUpdate){
+        // Store the saved review on the book
+        var currentReviews = BookToUpdate.get('reviews') || [];
+        currentReviews.push(ReviewModel.get('_id'));
+        BookToUpdate.set('reviews', currentReviews)
+        BookToUpdate.save().then(function(){
+          // We're done
+          deferred.resolve(ReviewModel);
+        });
+      });
+    });
+
+    return deferred.promise;
+  }
+
+  return {
+    all: all,
+    add: add,
+  }
 });
