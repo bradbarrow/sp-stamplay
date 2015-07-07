@@ -24,11 +24,30 @@
           </a>
         </div>
 
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6" ng-controller="NavController">
           <ul class="nav navbar-nav">
             <li class="active"><a ng-href="#">Books</a></li>
+            <li>
+              <a
+                ng-href="#"
+                ng-show="!loggedIn"
+                ng-click="login()">
+
+                Login
+              </a>
+            </li>
+            <li>
+              <a
+                ng-href="#"
+                ng-show="loggedIn"
+                ng-click="logout()">
+
+                Logout {{user.instance.displayName}}
+              </a>
+            </li>
           </ul>
         </div>
+
       </div>
     </nav>
     <div class="container">
@@ -47,7 +66,7 @@
             <div class="panel-heading">
               Books
             </div>
-            <div class="panel-body">
+            <div class="panel-body" ng-show="loggedIn">
               <form class="form-horizontal" ng-submit="addBook()">
                 <div class="form-group">
                   <label for="title" class="col-sm-2 control-label">Book Title</label>
