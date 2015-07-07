@@ -53,6 +53,16 @@ app.controller('BooksController', function($scope, $rootScope, $stamplay, Book, 
     $scope.newBook.title = '';
   }
 
+  $scope.upvote = function(review){
+    Review.upvote(review).then(function(){
+      $rootScope.$emit('Review::upvoted');
+    });
+  }
+
+  $rootScope.$on('Review::upvoted', function(data){
+    loadBooks();
+  });
+
   $rootScope.$on('Book::added', function(data){
     loadBooks();
   });
@@ -231,8 +241,24 @@ app.factory('Review', function($q, $stamplay, Book, $rootScope){
     return deferred.promise;
   }
 
+  function upvote(review) {
+    var deferred = $q.defer();
+
+    var ReviewModel = $stamplay.Cobject('review').Model;
+    ReviewModel.fetch(review.id).then(function(){
+      ReviewModel.upVote().then(function(){
+        deferred.resolve(ReviewModel);
+      });
+    }).catch(function(err){
+      deferred.resolve(err);
+    });
+
+    return deferred.promise;
+  }
+
   return {
     all: all,
     add: add,
+    upvote: upvote
   }
 });
