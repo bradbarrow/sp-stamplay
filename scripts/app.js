@@ -1,10 +1,14 @@
 Stamplay.init("bookclub");
 
 var app = angular.module('stamplay', ['ngStamplay']);
+
 app.run(function($rootScope, User){
+  $rootScope.paid = false;
+
   // Listen for login events
   $rootScope.$on('User::loggedIn', function(event, data){
     $rootScope.loggedIn = true;
+    $rootScope.paid = data.user.instance.paid || false;
     $rootScope.user = data.user;
   });
 
@@ -15,6 +19,37 @@ app.run(function($rootScope, User){
       $rootScope.$emit('User::loggedIn', {user: activeUser});
     }
   });
+});
+
+app.controller('PaymentController', function($scope, $rootScope, $stamplay, User){
+  Stripe.setPublishableKey('your_test_token');
+
+  $scope.card = {
+    number: '',
+    cvc: '',
+    exp_month: '',
+    exp_year: ''
+  }
+
+  $scope.pay = function(){
+    Stripe.card.createToken($scope.card, function(status, response){
+      if (response.error) {
+        console.log('error', response.error);
+      } else {
+        var token = response.id;
+        var customerStripe = new $stamplay.Stripe();
+        customerStripe.charge($rootScope.user.instance.id, token, 50, 'USD').then(function (response) {
+          $scope.$apply(function(){
+            User.update($rootScope.user.instance.id, 'paid', true).then(function(){
+              $rootScope.paid = true;
+            });
+          })
+        }, function(err){
+          console.log('error', err);
+        })
+      }
+    });
+  }
 });
 
 app.controller('BooksController', function($scope, $rootScope, $stamplay, Book, Review, User){
@@ -188,6 +223,22 @@ app.factory('User', function($q, $stamplay){
     return deferred.promise;
   }
 
+  function update(id, key, value) {
+    var deferred = $q.defer();
+
+    var User = $stamplay.User().Model;
+    User.fetch(id).then(function() {
+      User.set(key, value);
+      User.save().then(function(){
+        deferred.resolve(User);
+      });
+    }).catch(function(err) {
+      deferred.reject(err);
+    });
+
+    return deferred.promise;
+  }
+
   function logout() {
     var User = $stamplay.User().Model;
     User.logout();
@@ -197,7 +248,8 @@ app.factory('User', function($q, $stamplay){
     active: active,
     logout: logout,
     login: login,
-    find: find
+    find: find,
+    update: update
   };
 });
 

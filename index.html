@@ -13,6 +13,7 @@
     <script type="text/javascript" src="./bower_components/angular-stamplay/angular-stamplay.js"></script>
     <script src="./bower_components/algoliasearch/dist/algoliasearch.angular.js"></script>
     <script src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
     <script type="text/javascript" src="./scripts/app.js"></script>
   </head>
   <body>
@@ -60,7 +61,71 @@
     </div>
 
     <div class="container">
-      <div class="row" ng-show="loggedIn">
+      <div class="row" ng-show="loggedIn && !paid">
+        <div class="col-md-12">
+          <div class="panel panel-default" ng-controller="PaymentController">
+            <div class="panel-heading">
+              Pay to subscribe
+            </div>
+            <div class="panel-body" ng-show="loggedIn">
+              <form class="form-horizontal" ng-submit="pay()">
+                <div class="form-group">
+                  <label for="book" class="col-sm-2 control-label">Card Number</label>
+                  <div class="col-sm-10">
+                    <input
+                      type="text"
+                      ng-model="card.number"
+                      class="form-control"
+                      id="text"
+                      autocomplete="off">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="book" class="col-sm-2 control-label">CVC</label>
+                  <div class="col-sm-10">
+                    <input
+                      type="text"
+                      ng-model="card.cvc"
+                      class="form-control"
+                      id="text"
+                      autocomplete="off">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="book" class="col-sm-2 control-label">Expiry Month</label>
+                  <div class="col-sm-10">
+                    <input
+                      type="text"
+                      ng-model="card.exp_month"
+                      class="form-control"
+                      id="text"
+                      placeholder="02"
+                      autocomplete="off">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="book" class="col-sm-2 control-label">Expiry Year</label>
+                  <div class="col-sm-10">
+                    <input
+                      type="text"
+                      ng-model="card.exp_year"
+                      class="form-control"
+                      id="text"
+                      placeholder="2015"
+                      autocomplete="off">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Pay</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row" ng-show="loggedIn && paid">
         <div class="col-md-12">
           <div class="panel panel-default" ng-controller="ReviewController">
             <div class="panel-heading">
@@ -123,7 +188,7 @@
             <div class="panel-heading">
               Books
             </div>
-            <div class="panel-body" ng-show="loggedIn">
+            <div class="panel-body" ng-show="loggedIn && paid">
               <form class="form-horizontal" ng-submit="addBook()">
                 <div class="form-group">
                   <label for="title" class="col-sm-2 control-label">Book Title</label>
